@@ -2,15 +2,11 @@
 
 import Link from 'next/link';
 import { useAuth } from '@/context/AuthContext';
-import { useRouter, useSearchParams } from 'next/navigation';
 import { FaUserMd, FaUser, FaSignOutAlt, FaSignInAlt, FaUserPlus } from 'react-icons/fa';
 import toast from 'react-hot-toast';
 
 export default function Header() {
     const { user, logout } = useAuth();
-    const router = useRouter();
-    const searchParams = useSearchParams();
-    const redirect = searchParams.get('redirect') || '/';
 
     const handleLogout = () => {
         logout();
@@ -18,9 +14,6 @@ export default function Header() {
             duration: 2000,
             position: 'top-center',
         });
-        setTimeout(() => {
-            router.push(redirect);
-        }, 1000);
     };
 
     return (
