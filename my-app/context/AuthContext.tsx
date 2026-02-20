@@ -14,11 +14,10 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
     const [user, setUser] = useState<User | null>(null);
 
-    // Load user from localStorage on mount
+    // Load user from localStorage only on the client after mount
     useEffect(() => {
         const storedUser = localStorage.getItem('user');
         if (storedUser) {
-            // This is a one‑time initialization; we can safely ignore the exhaustive‑deps warning
             // eslint-disable-next-line react-hooks/exhaustive-deps
             setUser(JSON.parse(storedUser));
         }
