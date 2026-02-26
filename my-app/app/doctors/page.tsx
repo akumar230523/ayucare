@@ -1,15 +1,40 @@
 'use client';
 
-import { useState, useMemo } from 'react';
-import { users } from '@/data/users';
-import DoctorCard from '@/components/DoctorCard';
+import { useState, useEffect, useMemo } from 'react';
 import { FaUserMd, FaSearch, FaFilter } from 'react-icons/fa';
+import DoctorCard from '@/components/DoctorCard';
+
+interface Doctor {
+    _id: string;
+    name: string;
+    specialty?: string;
+    rating?: number;
+    experienceYears?: number;
+    iconUrl?: string;
+    expression?: string;
+    about?: string;
+}
+
+const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api';
 
 export default function DoctorsPage() {
+    const [doctors, setDoctors] = useState<Doctor[]>([]);
     const [searchTerm, setSearchTerm] = useState('');
     const [selectedSpecialty, setSelectedSpecialty] = useState('');
 
-    const doctors = users.filter(user => user.role === 'doctor');
+    useEffect(() => {
+        const fetchDoctors = async () => {
+            try {
+                const res = await fetch(`${API_URL}/users/doctors`);
+                const data = await res.json();
+                setDoctors(data);
+            } 
+            catch (error) {
+                console.error('Failed to fetch doctors:', error);
+            }
+        };
+        fetchDoctors();
+    }, []);
 
     const specialties = useMemo(() => {
         const all = doctors.map(d => d.specialty).filter(Boolean) as string[];
@@ -29,17 +54,12 @@ export default function DoctorsPage() {
     return (
         <div className="min-h-screen bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
             <div className="max-w-7xl mx-auto">
-                {/* Header with icon */}
-                <div className="flex items-center gap-3 mb-8">
-                    <FaUserMd className="text-4xl" style={{ color: '#46C2DE' }} />
-                    <h1 className="text-3xl font-bold text-gray-900">Find a Doctor</h1>
-                </div>
-
                 {/* Search and Filter Bar */}
                 <div className="bg-white p-6 rounded-xl shadow-md mb-8">
                     <div className="flex flex-col md:flex-row gap-4">
                         <div className="flex-1 relative">
-                            <label htmlFor="search" className="block text-sm font-medium text-gray-700 mb-1">
+                            <label htmlFor="search" className="block text-sm font-medium text-gray-700 mb-1 flex items-center gap-1">
+                                <FaUserMd className="text-gray-400" style={{ color: '#46C2DE' }} />
                                 Search by name or specialty
                             </label>
                             <div className="relative">
@@ -74,16 +94,16 @@ export default function DoctorsPage() {
 
                 {/* Results count with icon */}
                 <div className="flex items-center gap-2 text-sm text-gray-600 mb-4">
-                    <FaUserMd className="text-gray-400" />
+                    {/* <FaUserMd className="text-gray-400" /> */}
                     <span>
                         Showing {filteredDoctors.length} doctor{filteredDoctors.length !== 1 ? 's' : ''}
                     </span>
                 </div>
 
-                {/* Doctor Cards Grid */}
+                {/* Doctor Cards Grid – no clickable wrapper, only the button navigates */}
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                     {filteredDoctors.map(doctor => (
-                        <DoctorCard key={doctor.id} doctor={doctor} />
+                        <DoctorCard key={doctor._id} doctor={doctor} />
                     ))}
                 </div>
 
