@@ -1,8 +1,12 @@
 import dotenv from 'dotenv';
 import express from 'express';
 import cors from 'cors';
-import userRoutes from './routes/userRoutes.js';
+
 import connectDB from './configuration/connectDB.js';
+
+import authRoutes from './routes/userRoutes.js';
+import patientRoutes from './routes/patientRoutes.js';
+import doctorRoutes from './routes/doctorRoutes.js';
 import appointmentRoutes from './routes/appointmentRoutes.js';
 
 dotenv.config();
@@ -13,7 +17,9 @@ const PORT = process.env.PORT || 5000;
 app.use(cors());
 app.use(express.json());
 
-app.use('/api/users', userRoutes);
+app.use('/api/auth', authRoutes);
+app.use('/api/patients', patientRoutes);
+app.use('/api/doctors', doctorRoutes);
 app.use('/api/appointments', appointmentRoutes);
 
 // Function to connect to database and start server.

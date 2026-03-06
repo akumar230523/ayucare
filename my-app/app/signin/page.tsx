@@ -1,165 +1,143 @@
 'use client';
 
-import { Suspense, useState } from 'react';
-import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import Image from 'next/image';
 import toast from 'react-hot-toast';
+import { Suspense, useState } from 'react';
+import { useRouter, useSearchParams } from 'next/navigation';
+import { FaEnvelope, FaLock, FaEye, FaEyeSlash, FaSignInAlt, FaUserMd } from 'react-icons/fa';
+
 import { useAuth } from '@/context/AuthContext';
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api';
 
 function SignInForm() {
-    const [identifier, setIdentifier] = useState('');
-    const [password, setPassword] = useState('');
-    const [loading, setLoading] = useState(false);
-    const { setUser } = useAuth();
     const router = useRouter();
+    const { setUser } = useAuth();
     const searchParams = useSearchParams();
     const redirect = searchParams.get('redirect') || '/';
+
+    const [identifier, setIdentifier] = useState('');
+    const [password, setPassword] = useState('');
+    const [showPassword, setShowPassword] = useState(false);
+    const [loading, setLoading] = useState(false);
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         setLoading(true);
-
         try {
-            const res = await fetch(`${API_URL}/users/signin`, {
+            const res = await fetch(`${API_URL}/auth/signin`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ identifier, password }),
             });
-
             const data = await res.json();
-
             if (res.ok && data.user) {
                 setUser(data.user);
                 localStorage.setItem('user', JSON.stringify(data.user));
-                toast.success(data.message || 'Sign in successful.', { duration: 2000 });
-                setTimeout(() => router.push(redirect), 1000);
-            } 
-            else {
-                toast.error(data.message || 'Invalid credentials! Please try again.');
+                toast.success(data.message || 'Welcome back!');
+                setTimeout(() => router.push(redirect), 800);
+            } else {
+                toast.error(data.message || 'Invalid credentials. Please try again.');
             }
-        } 
-        catch (error) {
+        } catch {
             toast.error('Network error! Please try again.');
-            console.error(error);
-        } 
-        finally {
+        } finally {
             setLoading(false);
         }
     };
 
     return (
-        <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
-            <div className="space-y-4">
-                <div>
-                    <label htmlFor="identifier" className="block text-sm font-medium text-gray-700">
-                        Email / Mobile
-                    </label>
+        <form onSubmit={handleSubmit} className="space-y-4 mt-6">
+            <div>
+                <label htmlFor="identifier" className="block text-sm font-medium text-gray-700 mb-1">Email or Mobile</label>
+                <div className="relative">
+                    <FaEnvelope className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm" />
                     <input
                         id="identifier"
-                        name="identifier"
-                        value={identifier}
                         type="text"
-                        autoComplete="username"
-                        placeholder="Email or Mobile"
+                        value={identifier}
                         onChange={(e) => setIdentifier(e.target.value)}
+                        placeholder="Email or mobile number"
+                        autoComplete="username"
                         required
-                        className="mt-1 appearance-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                        className="w-full pl-10 pr-5 py-2.5 border border-gray-300 rounded-lg text-sm text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition"
                     />
-                </div>
-                <div>
-                    <label htmlFor="password" className="block text-sm font-medium text-gray-700">
-                        Password
-                    </label>
-                    <input
-                        type="password"
-                        id="password"
-                        name="password"
-                        value={password}
-                        autoComplete="current-password"
-                        placeholder="Password"
-                        onChange={(e) => setPassword(e.target.value)}
-                        required
-                        className="mt-1 appearance-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-                    />
-                </div>
-            </div>
-
-            <div className="flex items-center justify-between">
-                <div className="flex items-center">
-                    <input
-                        id="remember"
-                        name="remember"
-                        type="checkbox"
-                        className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded cursor-pointer"
-                    />
-                    <label htmlFor="remember" className="ml-2 block text-sm text-gray-900">
-                        Remember Me
-                    </label>
-                </div>
-                <div className="text-sm">
-                    <Link href="/forgot-password" className="font-medium" style={{ color: '#46C2DE' }}>
-                        Forgot Password?
-                    </Link>
                 </div>
             </div>
 
             <div>
-                <button
-                    type="submit"
-                    disabled={loading}
-                    style={{ backgroundColor: '#46C2DE' }}
-                    className="group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white hover:opacity-90 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 cursor-pointer disabled:opacity-50"
-                >
-                    {loading ? 'Signing in...' : 'Sign In'}
-                </button>
+                <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-1">Password</label>
+                <div className="relative">
+                    <FaLock className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm" />
+                    <input
+                        id="password"
+                        type={showPassword ? 'text' : 'password'}
+                        value={password}
+                        onChange={(e) => setPassword(e.target.value)}
+                        placeholder="Your password"
+                        autoComplete="current-password"
+                        required
+                        className="w-full pl-10 pr-5 py-2.5 border border-gray-300 rounded-lg text-sm text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition"
+                    />
+                    <button type="button"
+                        onClick={() => setShowPassword(!showPassword)}
+                        className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 cursor-pointer hover:text-gray-600"
+                        aria-label={showPassword ? 'Hide password' : 'Show password'}
+                    >
+                        {showPassword ? <FaEyeSlash size={14} /> : <FaEye size={14} />}
+                    </button>
+                </div>
             </div>
+
+            <div className="flex items-center justify-between text-sm">
+                <label className="flex items-center gap-2 cursor-pointer text-gray-600">
+                    <input type="checkbox" className="w-4 h-4 rounded border-gray-300 text-primary focus:ring-primary" /> Remember me
+                </label>
+                <Link href="/forgot-password" className="text-primary font-medium hover:underline">Forgot password?</Link>
+            </div>
+
+            <button type="submit" disabled={loading} className="btn-primary w-full flex items-center justify-center gap-2 py-2.5 cursor-pointer">
+                <FaSignInAlt size={15} /> {loading ? 'Signing in...' : 'Sign In'}
+            </button>
+
+            <div className="flex items-center gap-3 my-2">
+                <div className="flex-1 h-px bg-gray-200" />
+                <span className="text-xs text-gray-400">or</span>
+                <div className="flex-1 h-px bg-gray-200" />
+            </div>
+
+            <button type="button" className="w-full flex items-center justify-center gap-2 py-2.5 border border-gray-300 rounded-lg text-sm text-gray-700 cursor-pointer hover:bg-gray-50 transition">
+                <Image src="https://www.svgrepo.com/show/475656/google-color.svg" alt="Google" width={18} height={18} /> Continue with Google
+            </button>
         </form>
     );
 }
 
-const SignInPage = () => {
+export default function SignInPage() {
     return (
-        <div className="min-h-screen flex items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
-            <div className="max-w-md w-full space-y-8 bg-white p-8 rounded-lg shadow">
-                <div>
-                    <h2 className="text-center text-3xl font-extrabold text-gray-900">Ayucare</h2>
-                    <p className="mt-2 text-center text-sm text-gray-600">Sign in to your account</p>
-                </div>
+        <div className="min-h-screen bg-gray-50 flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
+            <div className="w-full max-w-md">
+                <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-8">
+                    <div className="text-center mb-6">
+                        <div className="w-12 h-12 rounded-xl bg-primary flex items-center justify-center mx-auto mb-4">
+                            <FaUserMd className="text-white text-xl" />
+                        </div>
+                        <h1 className="text-2xl font-bold text-gray-900">Ayu<span className="text-primary">care</span></h1>
+                        <p className="text-sm text-gray-500 mt-1">Sign In to your Ayucare account</p>
+                    </div>
 
-                <Suspense fallback={<div className="text-center py-4">Loading sign in form...</div>}>
-                    <SignInForm />
-                </Suspense>
+                    <Suspense fallback={<div className="text-center py-6 text-sm text-gray-400">Loading...</div>}>
+                        <SignInForm />
+                    </Suspense>
 
-                <div className="text-center text-sm text-gray-600">or sign in with</div>
-
-                <div>
-                    <button
-                        type="button"
-                        className="w-full flex justify-center items-center py-2 px-4 border border-gray-300 rounded-md shadow-sm bg-white text-sm font-medium text-gray-700 hover:bg-gray-50 cursor-pointer"
-                    >
-                        <Image
-                            src="https://www.svgrepo.com/show/475656/google-color.svg"
-                            alt="Google logo"
-                            width={20}
-                            height={20}
-                            className="mr-2"
-                        />
-                        Continue with Google
-                    </button>
-                </div>
-
-                <div className="text-center text-sm">
-                    Don&apos;t have an account?{' '}
-                    <Link href="/signup" className="font-medium" style={{ color: '#46C2DE' }}>
-                        Sign Up
-                    </Link>
+                    <p className="text-center text-sm text-gray-500 mt-6">
+                        Don&apos;t have an account?{' '}
+                        <Link href="/signup" className="text-primary font-semibold hover:underline">Sign Up</Link>
+                    </p>
                 </div>
             </div>
         </div>
     );
-};
 
-export default SignInPage;
+}
